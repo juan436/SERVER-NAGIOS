@@ -1,0 +1,26 @@
+services:
+  nagios:
+    image: jasonrivers/nagios:latest
+    container_name: nagios
+    restart: unless-stopped
+    environment:
+      - NAGIOSADMIN_USER=admin
+      - NAGIOSADMIN_PASS=nagiosadmin
+    volumes:
+      - ./custom_nagios:/opt/nagios/etc/objects/custom
+      - ./var/log/nagios:/opt/nagios/var/log
+      - ./var/archives:/opt/nagios/var/archives
+      - ./var/rw:/opt/nagios/var/rw
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nagios.rule=Host(`nagios.tu-dominio.com`)"
+      - "traefik.http.routers.nagios.entrypoints=websecure"
+      - "traefik.http.routers.nagios.tls.certresolver=myresolver"
+      - "traefik.http.services.nagios.loadbalancer.server.port=80"
+      - "traefik.http.middlewares.nagios-auth.basicauth.users=admin:$$apr1$$9cT/pxU4$$XrMkdO3aZ4lDZL2Wgt2Yp0"
+
+networks:
+  proxy:
+    external: true
